@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#
+# This script is designed to be run inside the container
+#
+
+
+# configure etcd
+export ETCD_PORT="${ETCD_PORT:-4001}"
+export ETCD="$HOST:$ETCD_PORT"
+export ETCD_PATH="${ETCD_PATH:-/hehe/services/elasticsearch}"
+
+etcdctl --no-sync -C "$ETCD" rm "$ETCD_PATH/${HOST}" >/dev/null
