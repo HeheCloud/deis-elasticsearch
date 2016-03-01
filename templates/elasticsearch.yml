@@ -44,8 +44,8 @@ network.host: 0.0.0.0
 # ------------
 # network.publish_host: ${PRIVATE_IPV4}
 
-# transport.tcp.port: ${TRANSPORT_PORT}
-# http.port: ${HTTP_PORT}
+transport.tcp.port: ${TRANSPORT_PORT}
+http.port: ${HTTP_PORT}
 
 ################################## Discovery ##################################
 
