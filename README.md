@@ -10,7 +10,9 @@ Please add any [issues](https://github.com/HeheCloud/deis-elasticsearch/issues) 
 ## Usage
 
 ```
-$ docker run --rm \
+ETCD_PATH=/hehe/services/elasticsearch
+etcdctl --no-sync set "$ETCD_PATH/hosts/${COREOS_PRIVATE_IPV4}" '{"http_port": 9200, "transport_port": 9300}' --ttl 60
+$ docker run --rm -it \
     --name deis-elasticsearch \
     -p 9200:9200 \
     -p 9300:9300 \
@@ -22,7 +24,7 @@ $ docker run --rm \
     -e EXTERNAL_PORT_HTTP=9200 \
     -e TRANSPORT_PORT=9300 \
     -e EXTERNAL_PORT_TRANSPORT=9300 \
-    elasticsearch:2.2
+    daocloud.io/cloudmario/deis-elasticsearch:master-init
 ```
 
 
