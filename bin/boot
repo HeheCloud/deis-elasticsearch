@@ -24,7 +24,36 @@ done
 # wait until etcd has discarded potentially stale values
 sleep $((ETCD_TTL+1))
 
-/app/bin/run elasticsearch &
+# wait for confd to run once and install initial templates
+until confd -onetime -node "$ETCD" -confdir /app --log-level error; do
+  echo "elasticsearch: waiting for confd to write initial templates..."
+  sleep $((ETCD_TTL/2))  # sleep for half the TTL
+done
+
+
+function run {
+  # Add elasticsearch as command if needed
+  if [ "${1:0:1}" = '-' ]; then
+  	set -- elasticsearch "$@"
+  fi
+
+  # Drop root privileges if we are running elasticsearch
+  # allow the container to be started with `--user`
+  if [ "$1" = 'elasticsearch' -a "$(id -u)" = '0' ]; then
+  	# Change the ownership of /usr/share/elasticsearch/data to elasticsearch
+  	chown -R elasticsearch:elasticsearch /usr/share/elasticsearch/data
+
+  	set -- gosu elasticsearch "$@"
+  	#exec gosu elasticsearch "$BASH_SOURCE" "$@"
+  fi
+
+  # As argument is not related to elasticsearch,
+  # then assume that user wants to run his own process,
+  # for example a `bash` shell to explore this image
+  exec "$@"
+}
+
+run elasticsearch &
 
 SERVICE_PID=$!
 
@@ -35,6 +64,12 @@ function on_exit() {
     exit 0
 }
 trap on_exit INT TERM
+
+# spawn confd in the background to update services based on etcd changes
+confd -node "$ETCD" -confdir /app --log-level error --interval 5 &
+
+# wait for the service to become available on PORT
+until curl -sSL --fail http://localhost:${PORT}/ | grep -e 'version' >/dev/null 2>&1; do sleep 1; done
 
 echo "elasticsearch is running..."
 
@@ -47,12 +82,9 @@ if [[ ! -z $EXTERNAL_PORT_HTTP ]]; then
 
   set +e
 
-  # wait for the service to become available on PORT
-  until curl -sSL --fail http://localhost:${PORT}/ | grep -e 'version' >/dev/null 2>&1; do sleep 1; done
-
   # while the port is listening, publish to etcd
   while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
-    etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/${HOST}" '{"http_port": ${EXTERNAL_PORT_HTTP}, "transport_port": ${EXTERNAL_PORT_TRANSPORT}}' --ttl "$ETCD_TTL" >/dev/null
+    etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/hosts/${HOST}" '{"http_port": ${EXTERNAL_PORT_HTTP}, "transport_port": ${EXTERNAL_PORT_TRANSPORT}}' --ttl "$ETCD_TTL" >/dev/null
     sleep $((ETCD_TTL/2)) # sleep for half the TTL
   done
 

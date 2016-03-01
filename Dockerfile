@@ -17,7 +17,6 @@ ENV TZ "Asia/Shanghai"
 
 ADD . /app
 
-RUN chmod +x /app/bin/run
 RUN chmod +x /app/bin/boot
 
 ENTRYPOINT []

@@ -1,0 +1,8 @@
+[template]
+keys        = [
+  "/hehe/services/elasticsearch"
+]
+owner       = "elasticsearch"
+mode        = "0644"
+src         = "elasticsearch.yml"
+dest        = "/usr/share/elasticsearch/config/elasticsearch.yml"
