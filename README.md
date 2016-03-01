@@ -17,13 +17,14 @@ $ docker run --rm -it \
     -p 9200:9200 \
     -p 9300:9300 \
     -v /data/elasticsearch/data:/usr/share/elasticsearch/data \
+    -v /data/elasticsearch/logs:/usr/share/elasticsearch/logs \
     -e HOST=${COREOS_PRIVATE_IPV4} \
     -e PUBLIC_IPV4=${COREOS_PUBLIC_IPV4} \
     -e PRIVATE_IPV4=${COREOS_PRIVATE_IPV4} \
     -e HTTP_PORT=9200 \
-    -e EXTERNAL_PORT_HTTP=9200 \
+    -e EXTERNAL_HTTP_PORT=9200 \
     -e TRANSPORT_PORT=9300 \
-    -e EXTERNAL_PORT_TRANSPORT=9300 \
+    -e EXTERNAL_TRANSPORT_PORT=9300 \
     daocloud.io/cloudmario/deis-elasticsearch:master-init
 ```
 

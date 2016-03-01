@@ -28,7 +28,7 @@ node.data: true
 
 path.conf: /usr/share/elasticsearch/config
 path.data: /usr/share/elasticsearch/data
-path.logs: /usr/share/elasticsearch/log
+path.logs: /usr/share/elasticsearch/logs
 
 ############################## Network And HTTP ###############################
 

@@ -19,6 +19,8 @@ ADD . /app
 
 RUN chmod +x /app/bin/boot
 
+VOLUME /usr/share/elasticsearch/logs
+
 ENTRYPOINT []
 CMD ["/app/bin/boot"]
 

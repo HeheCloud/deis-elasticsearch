@@ -15,6 +15,12 @@ export ETCD="$HOST:$ETCD_PORT"
 export ETCD_PATH="${ETCD_PATH:-/hehe/services/elasticsearch}"
 export ETCD_TTL="${ETCD_TTL:-20}"
 
+# configure ports
+export HTTP_PORT="${HTTP_PORT:-9200}"
+export TRANSPORT_PORT="${TRANSPORT_PORT:-9300}"
+export EXTERNAL_TRANSPORT_PORT=${EXTERNAL_TRANSPORT_PORT:-$TRANSPORT_PORT}
+export EXTERNAL_HTTP_PORT=${EXTERNAL_HTTP_PORT:-$HTTP_PORT}
+
 # wait for etcd to be available
 until etcdctl --no-sync -C "$ETCD" ls >/dev/null 2>&1; do
   echo "elasticsearch: waiting for etcd at $ETCD..."
@@ -68,22 +74,21 @@ trap on_exit INT TERM
 confd -node "$ETCD" -confdir /app --log-level error --interval 5 &
 
 # wait for the service to become available on PORT
-until curl -sSL --fail http://localhost:${PORT}/ | grep -e 'version' >/dev/null 2>&1; do sleep 1; done
+until curl -sSL --fail http://localhost:${HTTP_PORT}/ | grep -e 'version' >/dev/null 2>&1; do sleep 1; done
 
 echo "elasticsearch is running..."
 
-# publish the service to etcd using the injected HOST and EXTERNAL_PORT_HTTP
-if [[ ! -z $EXTERNAL_PORT_HTTP ]]; then
+# publish the service to etcd using the injected HOST and EXTERNAL_HTTP_PORT
+if [[ ! -z $EXTERNAL_HTTP_PORT ]]; then
   # configure service discovery
-  PORT=${PORT:-9200}
-  PROTO=${PROTO:-tcp}
-  EXTERNAL_PORT_TRANSPORT=${EXTERNAL_PORT_TRANSPORT:-9300}
+  PORT=$HTTP_PORT
+  PROTO=tcp
 
   set +e
 
   # while the port is listening, publish to etcd
   while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
-    etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/hosts/${HOST}" '{"http_port": ${EXTERNAL_PORT_HTTP}, "transport_port": ${EXTERNAL_PORT_TRANSPORT}}' --ttl "$ETCD_TTL" >/dev/null
+    etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/hosts/${HOST}" '{"http_port": ${EXTERNAL_HTTP_PORT}, "transport_port": ${EXTERNAL_TRANSPORT_PORT}}' --ttl "$ETCD_TTL" >/dev/null
     sleep $((ETCD_TTL/2)) # sleep for half the TTL
   done
 
