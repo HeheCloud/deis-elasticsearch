@@ -39,10 +39,11 @@ path.logs: /usr/share/elasticsearch/logs
 
 # Set the address other nodes will use to communicate with this node. If not
 # set, it is automatically derived. It must point to an actual IP address.
-network.publish_host: ${PRIVATE_IPV4}
+# ------------
+# network.publish_host: ${PRIVATE_IPV4}
 
-transport.tcp.port: ${TRANSPORT_PORT}
-http.port: ${HTTP_PORT}
+# transport.tcp.port: ${TRANSPORT_PORT}
+# http.port: ${HTTP_PORT}
 
 ################################## Discovery ##################################
 

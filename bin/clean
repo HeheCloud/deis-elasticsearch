@@ -9,4 +9,4 @@ export ETCD_PORT="${ETCD_PORT:-4001}"
 export ETCD="$HOST:$ETCD_PORT"
 export ETCD_PATH="${ETCD_PATH:-/hehe/services/elasticsearch}"
 
-etcdctl --no-sync -C "$ETCD" rm "$ETCD_PATH/hosts/${PRIVATE_IPV4}" >/dev/null
+etcdctl --no-sync -C "$ETCD" rm "$ETCD_PATH/hosts/${HOST}" >/dev/null

@@ -11,7 +11,8 @@ Please add any [issues](https://github.com/HeheCloud/deis-elasticsearch/issues) 
 
 ```
 ETCD_PATH=/hehe/services/elasticsearch
-etcdctl --no-sync set "$ETCD_PATH/hosts/${COREOS_PRIVATE_IPV4}" '{"http_port": 9200, "transport_port": 9300}' --ttl 60
+etcdctl set $ETCD_PATH/cluster.name hehe
+etcdctl --no-sync set "$ETCD_PATH/hosts/10.171.35.246" '{"IP":"10.171.35.246","HttpPort":9200,"TransportPort":9300}'
 $ docker run --rm -it \
     --name deis-elasticsearch \
     -p 9200:9200 \
@@ -19,12 +20,6 @@ $ docker run --rm -it \
     -v /data/elasticsearch/data:/usr/share/elasticsearch/data \
     -v /data/elasticsearch/logs:/usr/share/elasticsearch/logs \
     -e HOST=${COREOS_PRIVATE_IPV4} \
-    -e PUBLIC_IPV4=${COREOS_PUBLIC_IPV4} \
-    -e PRIVATE_IPV4=${COREOS_PRIVATE_IPV4} \
-    -e HTTP_PORT=9200 \
-    -e EXTERNAL_HTTP_PORT=9200 \
-    -e TRANSPORT_PORT=9300 \
-    -e EXTERNAL_TRANSPORT_PORT=9300 \
     daocloud.io/cloudmario/deis-elasticsearch:master-init
 ```
 
