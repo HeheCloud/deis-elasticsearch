@@ -5,7 +5,7 @@
 ################################### Cluster ###################################
 
 # Cluster name identifies your cluster for auto-discovery.
-cluster.name: {{ getenv "/hehe/services/elasticsearch/cluster.name" }}
+cluster.name: {{ getv "/hehe/services/elasticsearch/cluster.name" }}
 
 #################################### Node #####################################
 # Auto Generate Node Names
@@ -31,6 +31,8 @@ path.data: /usr/share/elasticsearch/data
 path.logs: /usr/share/elasticsearch/logs
 
 ############################## Network And HTTP ###############################
+
+network.host: 0.0.0.0
 
 # Elasticsearch, by default, binds itself to the 0.0.0.0 address, and listens
 # on port [9200-9300] for HTTP traffic and on port [9300-9400] for node-to-node
