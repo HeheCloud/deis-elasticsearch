@@ -1,18 +1,31 @@
 [Unit]
-Description=deis-mysql
-Wants=deis-store-volume.service
-After=deis-store-volume.service
+Description=deis-elasticsearch
+After=docker.service
+Requires=docker.service
 
 [Service]
 EnvironmentFile=/etc/environment
-Environment=IMAGE=daocloud.io/cloudmario/deis-mysql:v1.0.2
+Environment=IMAGE=daocloud.io/cloudmario/deis-elasticsearch:v1.0.1
 TimeoutStartSec=20m
-ExecStartPre=/bin/sh -c "docker history $IMAGE >/dev/null 2>&1 || flock -w 1200 /var/run/lock/mysql-pull docker pull $IMAGE"
-ExecStartPre=/bin/sh -c "docker inspect deis-mysql >/dev/null 2>&1 && docker rm -f deis-mysql >/dev/null 2>&1 || true"
-ExecStart=/bin/sh -c "ROOT_PASS=`etcdctl get /hehe/services/mysql/rootPass` && docker run --name deis-mysql --rm -p $COREOS_PRIVATE_IPV4:3306:3306 -e EXTERNAL_PORT=3306 -e HOST=$COREOS_PRIVATE_IPV4 -e MYSQL_ROOT_PASSWORD=$ROOT_PASS -v /var/lib/deis/store/mysql:/var/lib/mysql $IMAGE"
-ExecStop=-/usr/bin/docker stop deis-mysql
+ExecStartPre=/bin/sh -c "docker history $IMAGE >/dev/null 2>&1 || flock -w 1200 /var/run/lock/elasticsearch-pull docker pull $IMAGE"
+ExecStartPre=/bin/sh -c "docker inspect deis-elasticsearch >/dev/null 2>&1 && docker rm -f deis-elasticsearch >/dev/null 2>&1 || true"
+ExecStartPre=/bin/sh -c 'etcdctl set "/hehe/services/elasticsearch/hosts/${COREOS_PRIVATE_IPV4}" "{\"IP"\:\"${COREOS_PRIVATE_IPV4}\",\"HttpPort\":9200,\"TransportPort\":9300}"'
+ExecStart=/bin/sh -c "docker run --rm \
+  --name deis-elasticsearch \
+  -p 9200:9200 \
+  -p 9300:9300 \
+  -v /data/elasticsearch/data:/usr/share/elasticsearch/data \
+  -v /data/elasticsearch/logs:/usr/share/elasticsearch/logs \
+  -e HOST=$COREOS_PRIVATE_IPV4 \
+  $IMAGE"
+ExecStop=-/usr/bin/docker exec deis-elasticsearch /app/bin/clean
+ExecStop=-/usr/bin/docker stop deis-elasticsearch
+ExecStop=-/bin/sh -c "etcdctl rm /hehe/services/elasticsearch/hosts/${COREOS_PRIVATE_IPV4}"
 Restart=on-failure
 RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
+
+[X-Fleet]
+Conflicts=deis-elasticsearch@*.service

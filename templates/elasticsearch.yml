@@ -5,7 +5,7 @@
 ################################### Cluster ###################################
 
 # Cluster name identifies your cluster for auto-discovery.
-cluster.name: {{ getenv "/services/elasticsearch/cluster.name" }}
+cluster.name: {{ getv "/hehe/services/elasticsearch/cluster.name" }}
 
 #################################### Node #####################################
 # Auto Generate Node Names
@@ -28,9 +28,11 @@ node.data: true
 
 path.conf: /usr/share/elasticsearch/config
 path.data: /usr/share/elasticsearch/data
-path.logs: /usr/share/elasticsearch/log
+path.logs: /usr/share/elasticsearch/logs
 
 ############################## Network And HTTP ###############################
+
+network.host: 0.0.0.0
 
 # Elasticsearch, by default, binds itself to the 0.0.0.0 address, and listens
 # on port [9200-9300] for HTTP traffic and on port [9300-9400] for node-to-node
@@ -39,7 +41,8 @@ path.logs: /usr/share/elasticsearch/log
 
 # Set the address other nodes will use to communicate with this node. If not
 # set, it is automatically derived. It must point to an actual IP address.
-network.publish_host: ${PRIVATE_IPV4}
+# ------------
+# network.publish_host: ${PRIVATE_IPV4}
 
 transport.tcp.port: ${TRANSPORT_PORT}
 http.port: ${HTTP_PORT}
@@ -57,4 +60,4 @@ discovery.zen.ping.multicast.enabled: false
 # negotiate responsibilites.
 # e.g. ["ip:transport_port","etc:etc"]
 #
-discovery.zen.ping.unicast.hosts: [{{range gets "/services/elasticsearch/hosts/*"}}{{$data := json .Value}}"{{$data.IP}}:{{$data.TransportPort}}",{{end}}]
+discovery.zen.ping.unicast.hosts: [{{range gets "/hehe/services/elasticsearch/hosts/*"}}{{$data := json .Value}}"{{$data.IP}}:{{$data.TransportPort}}",{{end}}]
