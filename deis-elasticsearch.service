@@ -12,8 +12,8 @@ ExecStartPre=/bin/sh -c "docker inspect deis-elasticsearch >/dev/null 2>&1 && do
 ExecStartPre=/bin/sh -c 'etcdctl set "/hehe/services/elasticsearch/hosts/${COREOS_PRIVATE_IPV4}" "{\"IP"\:\"${COREOS_PRIVATE_IPV4}\",\"HttpPort\":9200,\"TransportPort\":9300}"'
 ExecStart=/bin/sh -c "docker run --rm \
   --name deis-elasticsearch \
-  -p 9200:9200 \
-  -p 9300:9300 \
+  -p ${COREOS_PRIVATE_IPV4}:9200:9200 \
+  -p ${COREOS_PRIVATE_IPV4}:9300:9300 \
   -v /data/elasticsearch/data:/usr/share/elasticsearch/data \
   -v /data/elasticsearch/logs:/usr/share/elasticsearch/logs \
   -e HOST=$COREOS_PRIVATE_IPV4 \
